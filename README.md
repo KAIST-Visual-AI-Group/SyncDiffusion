@@ -24,7 +24,7 @@ cd SyncDiffusion
 ```
 Then you either can create a new conda environment:
 ```
-conda env create -f environment.yml
+conda env create -f environment.yaml
 conda activate syncdiffusion
 ```
 or install essential packages into an existing environment:
@@ -60,8 +60,8 @@ python gradio_syncdiffusion.py
 ![diff_w](./docs/figures/syncdiffusion_diff_weights.png)
 
 # Updates
-[x] Release code for SyncDiffusion.
-[ ] Release Huggingface Demo for panorama generation.
+- [x] Release code for SyncDiffusion.
+- [ ] Release Huggingface Demo for panorama generation.
 
 # Citation
 If you find our work useful, please consider citing:
