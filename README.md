@@ -54,7 +54,7 @@ python gradio_syncdiffusion.py
 
 ## Setting SyncDiffusion Hyperparameters
 * We have observed that `w=20` is a suitable weight value for SyncDiffusion in terms of image coherence and quality. However, you can freely test different weights by changing the `sync_weight` parameter.
-* For computation efficiency, you can set the `sync_thres = N` so that SyncDiffusion computes the gradient for only the first N steps of the sampling process. The below figure shows the results of `N = 0, 3, 5, 50`.
+* For computation efficiency, you can set the `sync_thres = N` so that SyncDiffusion computes the gradient for only the **first N steps** of the sampling process. The below figure shows the results of `N = 0, 3, 5, 50`.
 
 ![diff_w](./docs/figures/syncdiffusion_diff_weights.png)
 
