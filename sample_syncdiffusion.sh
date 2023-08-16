@@ -3,7 +3,7 @@ python sample_syncdiffusion.py \
 --negative "" \
 --H 512 \
 --W 3072 \
---seed 1 \
+--seed 100 \
 --steps 50 \
 --sync_weight 20.0 \
 --sync_decay_rate 0.95 \

@@ -93,7 +93,7 @@ class SyncDiffusion(nn.Module):
         stride=16,                          # stride for latents, set as 16 in the paper           
     ):  
         assert height >= 512 and width >= 512, 'height and width must be at least 512'
-        assert height % 8 == 0 and width % 8 == 0, 'height and width must be divisible by 8'
+        assert height % (stride * 8) == 0 and width % (stride * 8) == 0, 'height and width must be divisible by the stride multiplied by 8'
         assert stride % 8 == 0 and stride < 64, 'stride must be divisible by 8 and smaller than the latent size of Stable Diffusion'
 
         if isinstance(prompts, str):
