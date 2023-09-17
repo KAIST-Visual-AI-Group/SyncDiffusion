@@ -6,6 +6,8 @@
 
 [Yuseung Lee](https://phillipinseoul.github.io/), [Kunho Kim](), [Hyunjin Kim](), [Minhyuk Sung](https://mhsung.github.io/) <br>
 
+* 2023.09.18 - We have released the code for conditional generation by plugging SyncDiffusion into ControlNet in `SyncControlNet/`.
+
 # Introduction
 This repository contains the official implementation of **SyncDiffusion: Coherent Montage via Synchronized Joint Diffusions**.<br>
 **SyncDiffusion** is a plug-and-play module that synchronizes multiple diffusions through gradient descent from a perceptual similarity loss. More results can be viewed on our [project page](https://syncdiffusion.github.io/).
@@ -61,6 +63,7 @@ python gradio_syncdiffusion.py
 
 # Updates
 - [x] Release code for SyncDiffusion.
+- [x] Release code for conditional generation by plugging SyncDiffusion into ControlNet (`SyncControlNet/`).
 - [ ] Release Huggingface Demo for panorama generation.
 
 # Citation
