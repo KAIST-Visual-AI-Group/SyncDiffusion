@@ -106,7 +106,8 @@ class SyncDiffusion(nn.Module):
         text_embeds = self.get_text_embeds(prompts, negative_prompts)  # [2, 77, 768]
 
         # define a list of windows to process in parallel
-        views = get_views(height, width, stride=stride)
+        views = get_views(height, width, window_size=latent_size, stride=stride)
+
         print(f"[INFO] number of views to process: {len(views)}")
         
         # Initialize latent
@@ -128,6 +129,7 @@ class SyncDiffusion(nn.Module):
             decay_rate=sync_decay_rate,
             num_steps=num_inference_steps
         )
+
         print(f'[INFO] using exponential decay scheduler with decay rate {sync_decay_rate}')
 
         with torch.autocast('cuda'):
@@ -164,8 +166,6 @@ class SyncDiffusion(nn.Module):
                     ############################## BEGIN: PERFORM GRADIENT DESCENT (SyncDiffusion) ##############################
                     latent_view_copy = latent_view.clone().detach()
 
-                    #### TODO: TEST ####
-                    # if i % sync_freq == 0 and i < sync_thres:
                     if (i + 1) % sync_freq == 0 and i < sync_thres:
                         
                         # gradient on latent_view
@@ -201,7 +201,7 @@ class SyncDiffusion(nn.Module):
 
                         # SyncDiffusion: update the original latent
                         if view_idx != anchor_view_idx:
-                            latent_view_copy = latent_view_copy - sync_scheduler[i] * norm_grad                             # 1 x 4 x 64 x 64   
+                            latent_view_copy = latent_view_copy - sync_scheduler[i] * norm_grad      # 1 x 4 x 64 x 64   
                     ############################## END: PERFORM GRADIENT DESCENT (SyncDiffusion) ##############################
                     
                     # after gradient descent, perform a single denoising step
