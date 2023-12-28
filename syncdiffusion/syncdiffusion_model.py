@@ -91,6 +91,7 @@ class SyncDiffusion(nn.Module):
         sync_thres=50,                      # sync_thres=n: compute SyncDiffusion only for the first n steps
         sync_decay_rate=0.95,               # decay rate for sync_weight, set as 0.95 in the paper        
         stride=16,                          # stride for latents, set as 16 in the paper           
+        loop_closure=False,                 # loop_closure=True: generate a loop-closed panorama
     ):  
         assert height >= 512 and width >= 512, 'height and width must be at least 512'
         assert height % (stride * 8) == 0 and width % (stride * 8) == 0, 'height and width must be divisible by the stride multiplied by 8'
@@ -106,7 +107,8 @@ class SyncDiffusion(nn.Module):
         text_embeds = self.get_text_embeds(prompts, negative_prompts)  # [2, 77, 768]
 
         # define a list of windows to process in parallel
-        views = get_views(height, width, window_size=latent_size, stride=stride)
+        views = get_views(height, width, window_size=latent_size, 
+                          stride=stride, loop_closure=loop_closure)
 
         print(f"[INFO] number of views to process: {len(views)}")
         
@@ -144,7 +146,7 @@ class SyncDiffusion(nn.Module):
                     if (i + 1) % sync_freq == 0 and i < sync_thres:
                         # decode the anchor view
                         h_start, h_end, w_start, w_end = views[anchor_view_idx]
-                        latent_view = latent[:, :, h_start:h_end, w_start:w_end].detach()
+                        latent_view = set_latent_view(latent, h_start, h_end, w_start, w_end)
 
                         latent_model_input = torch.cat([latent_view] * 2)                                               # 2 x 4 x 64 x 64
                         noise_pred = self.unet(latent_model_input, t, encoder_hidden_states=text_embeds)['sample']
@@ -161,7 +163,7 @@ class SyncDiffusion(nn.Module):
                 (2) Then perform SyncDiffusion and run a single denoising step
                 '''
                 for view_idx, (h_start, h_end, w_start, w_end) in enumerate(views):
-                    latent_view = latent[:, :, h_start:h_end, w_start:w_end].detach()
+                    latent_view = set_latent_view(latent, h_start, h_end, w_start, w_end)
 
                     ############################## BEGIN: PERFORM GRADIENT DESCENT (SyncDiffusion) ##############################
                     latent_view_copy = latent_view.clone().detach()
@@ -216,8 +218,15 @@ class SyncDiffusion(nn.Module):
                         latent_view_denoised = out['prev_sample'] 
 
                     # merge the latent views
-                    value[:, :, h_start:h_end, w_start:w_end] += latent_view_denoised
-                    count[:, :, h_start:h_end, w_start:w_end] += 1
+                    if w_end > w_start:
+                        value[:, :, h_start:h_end, w_start:w_end] += latent_view_denoised
+                        count[:, :, h_start:h_end, w_start:w_end] += 1
+                    else:       # for loop-closure
+                        value[:, :, h_start:h_end, w_start:] += latent_view_denoised[:, :, h_start:h_end, :latent_size-w_end]
+                        value[:, :, h_start:h_end, :w_end] += latent_view_denoised[:, :, h_start:h_end, latent_size-w_end:]
+
+                        count[:, :, h_start:h_end, w_start:] += 1
+                        count[:, :, h_start:h_end, :w_end] += 1
 
                 # take the MultiDiffusion step (average the latents)
                 latent = torch.where(count > 0, value / count, value)

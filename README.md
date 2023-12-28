@@ -7,6 +7,7 @@
 [Yuseung Lee](https://phillipinseoul.github.io/), [Kunho Kim](), [Hyunjin Kim](), [Minhyuk Sung](https://mhsung.github.io/) <br>
 
 # Updates
+- (2023.12.28) Added code for loop-closed generation. `--loop_closure`
 - (2023.09.22) Released the [Hugging Face demo](https://huggingface.co/spaces/KAIST-Geometric-AI-Lab/syncdiffusion-demo) for SyncDiffusion. 
 - (2023.09.22) :tada: SyncDiffusion is accepted to **NeurIPS 2023**!
 - (2023.09.18) Added the code for conditional generation based on ControlNet (Zhang et al.). Code is at `SyncControlNet/`. 

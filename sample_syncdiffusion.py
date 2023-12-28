@@ -24,6 +24,7 @@ def main():
     parser.add_argument('--sync_freq', type=int, default=1, help="frequency for SyncDiffusion")
     parser.add_argument('--stride', type=int, default=8, help="window stride for MultiDiffusion")
     parser.add_argument('--sync_decay_rate', type=float, default=0.99, help="SyncDiffusion weight scehduler decay rate")
+    parser.add_argument('--loop_closure', action='store_true', help="use loop closure")
     parser.add_argument('--seed', type=int, default=2023)
     args = parser.parse_args()
 
@@ -50,7 +51,8 @@ def main():
         sync_decay_rate = args.sync_decay_rate,
         sync_freq = args.sync_freq,
         sync_thres = args.sync_thres,
-        stride = args.stride
+        stride = args.stride,
+        loop_closure = args.loop_closure,
     )
     img.save(join(save_dir_full, f"sample_seed_{args.seed:06d}.png"))
     print(f"[INFO] saved the result for prompt: {args.prompt}")

@@ -8,7 +8,7 @@ def seed_everything(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-def get_views(panorama_height, panorama_width, window_size=64, stride=8):
+def get_views(panorama_height, panorama_width, window_size=64, stride=8, loop_closure=False):
     panorama_height /= 8
     panorama_width /= 8
     num_blocks_height = (panorama_height - window_size) // stride + 1
@@ -21,7 +21,34 @@ def get_views(panorama_height, panorama_width, window_size=64, stride=8):
         w_start = int((i % num_blocks_width) * stride)
         w_end = w_start + window_size
         views.append((h_start, h_end, w_start, w_end))
+    
+    if loop_closure:
+        # NOTE: Only when height is (8 * window_size)
+        assert panorama_height == window_size
+
+        for i in range(window_size // stride - 2):
+            h_start = 0
+            h_end = window_size
+            w_start = int(panorama_width - window_size + (i + 1) * stride)
+            w_end = (i + 1) * stride
+            views.append((h_start, h_end, w_start, w_end))
+
     return views
+
+
+def set_latent_view(latent, h_start, h_end, w_start, w_end):
+    '''Set the latent for each window'''
+    if w_end > w_start:
+        latent_view = latent[:, :, h_start:h_end, w_start:w_end].detach()
+    else:
+        latent_view = latent[:, :, h_start:h_end, w_start:]
+        latent_view = torch.cat([
+            latent_view, 
+            latent[:, :, h_start:h_end, :w_end]
+        ], dim=-1)
+
+    return latent_view
+
 
 def exponential_decay_list(init_weight, decay_rate, num_steps):
     weights = [init_weight * (decay_rate ** i) for i in range(num_steps)]

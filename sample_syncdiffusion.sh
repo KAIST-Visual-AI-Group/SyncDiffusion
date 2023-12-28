@@ -12,3 +12,4 @@ python sample_syncdiffusion.py \
 --sd_version "2.0" \
 --save_dir "results" \
 --stride 16
+# --loop_closure # uncomment to enable loop closure
